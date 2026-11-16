@@ -18,7 +18,7 @@ This document records the **versions found in the uploaded `Waveshare43Clean` ZI
 | Adafruit BusIO | 1.17.4 | Bundled supporting library |
 | Adafruit Unified Sensor | 1.1.15 | Bundled supporting library |
 
-Only LVGL, ESP32_Display_Panel, ESP32_IO_Expander, esp-lib-utils and an appropriate SD implementation are **directly relevant** to building the display sketch, plus the Espressif ESP32 Arduino core (Arduino.h, WiFi, ESP-NOW, and SPI). The other bundled Adafruit libraries may belong to the **separate Feather firmware**, which was not supplied. The exact transitive dependencies can vary with library version.
+Only LVGL, ESP32_Display_Panel, ESP32_IO_Expander, esp-lib-utils and an appropriate SD implementation are **directly relevant** to building the display sketch, plus the Espressif ESP32 Arduino core (Arduino.h, WiFi, ESP-NOW, and SPI). The other bundled Adafruit libraries correspond to the **now-published Feather sensor firmware**. Its source directly uses the Adafruit GPS, BME280 and BNO08x libraries. The exact transitive dependencies can vary with library version.
 
 ## Arduino IDE setup
 
@@ -46,7 +46,12 @@ Arduino/
 
 - Arduino IDE / Arduino CLI version, ESP32 board-core version and menu selections
 - Known-good compiler output and successful reproduction from this source-only package
-- Feather sensor-computer sender firmware
-- SD `/NAVDATA` directory and data generator
+- A complete, currently valid SD `/NAVDATA` directory: the uploaded historical 2608 snapshot is intentionally not committed
+- The original **FAA CIFP-to-index conversion tool** that created `Mini_FMC_NAVDATA_260806.zip`; the included world overlay builder requires an already converted base package
 
-The source-only package was checked for file integrity and credential-like literals, **not compiled**: an Arduino toolchain and the physical device were not available in this environment.
+The main display source and the Feather source have been checked for obvious hardcoded credentials, but **not compiled** in this publication pass. The physical boards, actual I²C sensor wiring, and end-to-end ESP-NOW behavior have not been validated here.
+
+## Companion firmware and data builder
+
+- **Feather firmware:** [Arduino sketch](../SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino) and [setup notes](FEATHER_SENSOR_COMPUTER.md). Select the appropriate ESP32-S2 Feather target; use the supplied sketch's `Wire.begin()` and default sensor addresses only if they match the physical board.
+- **Historical world NAVDATA overlay builder:** [Python 3 script](../tools/build_world_hybrid_navdata.py) and [Windows batch launcher](../tools/Build_World_NAVDATA.bat). The Python script uses only the standard library. It requires an **already converted** FAA NAVDATA ZIP and downloads OurAirports CSVs unless you specify local versions. See [data generation notes](WORLD_NAVDATA.md).
