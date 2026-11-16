@@ -1,8 +1,8 @@
 # Dependencies and build notes
 
-This document records the **versions found in the uploaded `Waveshare43Clean` ZIP**, not a newly tested toolchain lockfile. Exact Arduino IDE/ESP32 board-core versions and board-menu settings were absent from the archive. To reproduce the user's build, keep the original local environment/version details once known.
+The table below records the library versions used in the development sketchbook. It is a **dependency reference**, not a fully pinned or independently reproduced build environment. The exact Arduino IDE/ESP32 core version and board-menu settings are still to be documented.
 
-## Versions recorded in the supplied `libraries/`
+## Development library versions
 
 | Component | Version observed | Why it matters |
 | --- | --- | --- |
@@ -18,14 +18,14 @@ This document records the **versions found in the uploaded `Waveshare43Clean` ZI
 | Adafruit BusIO | 1.17.4 | Bundled supporting library |
 | Adafruit Unified Sensor | 1.1.15 | Bundled supporting library |
 
-Only LVGL, ESP32_Display_Panel, ESP32_IO_Expander, esp-lib-utils and an appropriate SD implementation are **directly relevant** to building the display sketch, plus the Espressif ESP32 Arduino core (Arduino.h, WiFi, ESP-NOW, and SPI). The other bundled Adafruit libraries correspond to the **now-published Feather sensor firmware**. Its source directly uses the Adafruit GPS, BME280 and BNO08x libraries. The exact transitive dependencies can vary with library version.
+Only LVGL, ESP32_Display_Panel, ESP32_IO_Expander, esp-lib-utils and an appropriate SD implementation are **directly relevant** to building the display sketch, plus the Espressif ESP32 Arduino core (Arduino.h, WiFi, ESP-NOW, and SPI). The Adafruit sensor libraries support the **companion Feather firmware**. Its source directly uses the Adafruit GPS, BME280 and BNO08x libraries. The exact transitive dependencies can vary with library version.
 
 ## Arduino IDE setup
 
 1. Install the Espressif **ESP32 boards** package. The code uses `esp_now_recv_info_t`, so a package with the modern ESP-NOW receive-callback API is required (typically ESP32 Arduino core 3.x). **The exact previously working version is unknown.**
 2. Install the library versions listed above through Arduino Library Manager or their official repositories. Use a clean sketchbook or resolve duplicate libraries when they conflict.
 3. Keep the `FlightManagementComputer` sketch folder and its four source files together. The main source file name matches the folder name so Arduino IDE can open it as a sketch.
-4. Put this repository's `config/lv_conf.h` into the parent directory of `lvgl/` as `libraries/lv_conf.h`, matching the original ZIP's layout. The configuration has `LV_COLOR_DEPTH 16`.
+4. Put this repository's `config/lv_conf.h` into the parent directory of `lvgl/` as `libraries/lv_conf.h`, matching the development sketchbook layout. The configuration has `LV_COLOR_DEPTH 16`.
 5. Build for the **Waveshare ESP32-S3-Touch-LCD-4.3** using the board parameters that match the hardware. Document the flash/PSRAM, partition, and USB settings that compile and boot successfully.
 6. With the board powered, open Serial Monitor at `115200`. Look for the `ESP-NOW SENSOR LINK` and `SD NAVDATA ONLINE` messages or error statuses.
 
@@ -42,14 +42,14 @@ Arduino/
   # ...other installed libraries as required
 ```
 
-## Not included and not asserted
+## Reproducibility status
 
 - Arduino IDE / Arduino CLI version, ESP32 board-core version and menu selections
-- Known-good compiler output and successful reproduction from this source-only package
-- A complete, currently valid SD `/NAVDATA` directory: the uploaded historical 2608 snapshot is intentionally not committed
-- The original **FAA CIFP-to-index conversion tool** that created `Mini_FMC_NAVDATA_260806.zip`; the included world overlay builder requires an already converted base package
+- A recorded clean build with the versions and board settings listed above
+- A complete, current SD `/NAVDATA` directory: the historical AIRAC 2608 snapshot is intentionally not committed
+- The **FAA CIFP-to-index conversion tool** used to create `Mini_FMC_NAVDATA_260806.zip`; the included worldwide overlay builder requires a preconverted base package
 
-The main display source and the Feather source have been checked for obvious hardcoded credentials, but **not compiled** in this publication pass. The physical boards, actual I²C sensor wiring, and end-to-end ESP-NOW behavior have not been validated here.
+The current source tree includes both display and sensor firmware. Hardware photos document on-device interface demonstrations, while a reproducible clean-build record, a measured ESP-NOW link test, and calibrated sensor results remain in the [verification plan](TEST_PLAN.md).
 
 ## Companion firmware and data builder
 
