@@ -16,7 +16,7 @@ This is an ongoing embedded-systems project exploring avionics-style navigation 
 - **Live sensor interface:** receives ESP-NOW packets from a separate Feather sensor computer carrying GPS position/UTC, barometric data, and orientation values. The receiver validates packet CRC-16/CCITT and tracks link health.
 - **Display:** 800 × 480 RGB LCD with GT911 touch, LVGL 8-based UI, and anti-tearing/display-buffer configuration.
 
-**Status:** Source code supplied; no clean-build or on-device regression test has been performed as part of this GitHub preparation. Some features depend on the external Feather firmware and SD navdata, neither of which were included in the uploaded archive.
+**Status:** The main display firmware and companion Feather sensor-transmitter source are now published. The hybrid NAVDATA builder is included, but the large generated data files are not. A clean build and on-device end-to-end test have **not** been completed as part of this repository preparation.
 
 ## Hardware and architecture
 
@@ -34,9 +34,17 @@ FlightManagementComputer/
   esp_panel_board_custom_conf.h     Waveshare RGB LCD, touch, and expander setup
   lvgl_v8_port.cpp                   LVGL display/touch FreeRTOS port
   lvgl_v8_port.h                     LVGL port settings
+SensorComputer/
+  Feather_Sensor_Computer_ESPNOW_v1/
+    Feather_Sensor_Computer_ESPNOW_v1.ino   ESP32-S2 transmitter, GPS, BME280, BNO085
 config/
   lv_conf.h                         LVGL 8.4 configuration from the original setup
+tools/
+  build_world_hybrid_navdata.py         FAA + OurAirports overlay generator
+  Build_World_NAVDATA.bat               Windows historical-data build launcher
 docs/
+  FEATHER_SENSOR_COMPUTER.md            Sensor hardware, protocol, and setup
+  WORLD_NAVDATA.md                      Data provenance and generation workflow
   ARCHITECTURE.md                   Data and UI architecture
   DEPENDENCIES_AND_BUILD.md         Library versions and build checklist
   HARDWARE.md                       Pin definitions and connected subsystems
@@ -53,13 +61,15 @@ docs/
 4. Open `FlightManagementComputer/FlightManagementComputer.ino` in Arduino IDE. Keep all four source files in the same sketch folder.
 5. Select suitable ESP32-S3 flash/PSRAM and board options for the Waveshare hardware, build, and upload. Record the working options after verifying them on the device.
 6. Open Serial Monitor at **115200 baud** to inspect ESP-NOW and SD navigation-data status.
+7. To run the **Feather sensor computer**, use [its dedicated setup guide](docs/FEATHER_SENSOR_COMPUTER.md); match channel 6 on both devices.
+8. To prepare **world NAVDATA**, review [the hybrid data-generation guide](docs/WORLD_NAVDATA.md). The original uploaded dataset is a **historical, expired 2608 snapshot**; do not assume it is current.
 
 The supplied archive included a large local `libraries/` directory. This GitHub version deliberately **does not vendor those third-party libraries**. Install them separately; see the version manifest in the build documentation. The original archive remains the reference if a future dependency update causes a regression.
 
 ## Important limitations
 
-- The full `/NAVDATA` SD-card dataset is **not supplied**. The built-in list of airports, VORs, and fixes is small, hard-coded **test data**. No claim is made that procedure availability or navigation data are suitable for real use.
-- The **Feather sensor transmitter** firmware is **not included**. The receiver and packet format are documented, but live values require a compatible transmitter.
+- The full `/NAVDATA` SD-card dataset is **not checked in**. The uploaded 2608 hybrid dataset was audited offline, but expired September 3, 2026; see [world NAVDATA](docs/WORLD_NAVDATA.md). The built-in list of airports, VORs, and fixes remains small, hard-coded **test data**.
+- The **Feather sensor transmitter** source is [included](SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino), but live values still require compatible wired sensors, board setup, and an on-device radio test.
 - GPS-derived calculations depend on valid sensor input; runtime behavior was not independently verified in this repository-preparation pass.
 - ESP-NOW packet CRC is an error-detection mechanism, **not authentication or encryption**. Do not treat received packets as trustworthy for safety-critical purposes.
 - The bundled porting files are adapted from Espressif examples and retain their existing SPDX notices. See [Third-party acknowledgements](docs/THIRD_PARTY.md).
@@ -67,8 +77,8 @@ The supplied archive included a large local `libraries/` directory. This GitHub 
 ## Planned improvements
 
 - Add actual hardware photos/screenshots and a wiring/block diagram based on the assembled device.
-- Publish the separate Feather sensor firmware after reviewing it for hard-coded configuration values.
-- Document the SD navdata generator, file format, source, licensing, and update procedures.
+- Capture a repeatable dual-board test showing valid AV1 packets, CRC checks, GPS data, and Feather-to-Waveshare link performance.
+- Rebuild and validate an up-to-date SD navigation database using a separately prepared FAA base package and documented source snapshots.
 - Extract navigation math and parsing into independently testable modules and add unit tests.
 - Capture reproducible board/PSRAM/build options and complete the [test plan](docs/TEST_PLAN.md).
 
