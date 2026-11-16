@@ -1,6 +1,6 @@
 # Hardware interfaces
 
-Values below come from the uploaded firmware/configuration, **not** independent continuity measurements.
+These pin assignments are defined by the firmware and board configuration. They are a reference for reproducing the hardware setup; continuity measurements and board-revision-specific wiring should be verified before modifications.
 
 ## LCD and touch
 
@@ -27,6 +27,6 @@ Values below come from the uploaded firmware/configuration, **not** independent 
 - ESP-NOW receiver enabled in Wi-Fi station mode.
 - Channel fixed at **6** (`SENSOR_ESPNOW_CHANNEL`).
 - Packet timeout is **1500 ms** and sensor-dependent pages have a **1000 ms** refresh setting.
-- Source data is transmitted by the **Adafruit ESP32-S2 Feather** sensor computer; the companion [firmware](../SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino) and [sensor setup guide](FEATHER_SENSOR_COMPUTER.md) are now in this repository. The code identifies PA1010D GPS (I²C `0x10`), onboard BME280 (`0x77`) and BNO085 (`0x4A`/`0x4B`); confirm wiring and power against your actual hardware.
+- Source data is transmitted by the **Adafruit ESP32-S2 Feather** sensor computer; the companion [firmware](../SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino) and [sensor setup guide](FEATHER_SENSOR_COMPUTER.md) are now in this repository. The code identifies PA1010D GPS (I²C `0x10`), onboard BME280 (`0x77`) and BNO085 (`0x4A`/`0x4B`); match wiring and power to the exact assembled board revision.
 
 See [navdata and sensor protocol](NAVDATA_AND_SENSOR_PROTOCOL.md) for the receiver's expected packet fields.
