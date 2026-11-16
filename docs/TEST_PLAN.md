@@ -1,45 +1,51 @@
-# Hardware and functional verification plan
+# Verification record and test plan
 
-**All hardware and integration test items below are planned, not passed.** Publishing the supplied Feather firmware and world NAVDATA builder does not establish a successful build or on-device operation. No hardware measurements, serial logs, or photos/videos were supplied for this pass.
+This document tracks the difference between **prototype features demonstrated on physical hardware**, offline software checks, and tests that still need repeatable measurements. Photographs are useful engineering evidence, but they do not replace serial logs, test vectors, or a documented build.
 
-| Area | Proposed acceptance check | Result |
+## Prototype demonstrations
+
+The [project photo gallery](../README.md#prototype-photographs) includes the Waveshare display running LAT/LON NAV, PROGRESS and STATUS pages, along with images of the separate Feather sensor hardware. The STATUS screen reports display/touch, SD, nav database, and sensor-computer states at capture time; it also shows a **GPS no-fix** condition. These images document a functioning prototype interface and do not by themselves establish continuous link reliability or GPS accuracy.
+
+## Verification matrix
+
+| Subsystem | Acceptance check | Evidence/status |
 | --- | --- | --- |
-| Arduino build | Build with pinned ESP32/LVGL/display dependencies | Not run |
-| LCD | 800 × 480 graphics, consistent colors, no blue tint | Not run |
-| Touch | Touch coordinates and CDU keys correspond to intended UI elements | Not run |
-| Pages | MENU, IDENT, POS INIT, DEP/ARR, ROUTE, LEGS, DIRECT TO, PROGRESS, STATUS render correctly | Not run |
-| Scratchpad | Characters, delete, transfer, and error messaging work | Not run |
-| Route edits | Insert/delete legs, discontinuities, and EXEC state behave as expected | Not run |
-| SD initialization | Card mounts with CH422G EXIO4 CS and GPIO6 dummy CS without corrupting LCD | Not run |
-| Navdata | Missing/valid indexed NAVDATA cases display appropriate status | Not run |
-| Feather build | Arduino IDE builds the Adafruit ESP32-S2 Feather sensor sketch with GPS/BME280/BNO085 libraries | Not run |
-| ESP-NOW | Receiver accepts properly formed packet and rejects bad CRC | Not run |
-| Feather-to-FMC | Channel 6, AV1 format, 10 Hz transmit setting, link timeout, and reliable delivery | Not run |
-| BME/BNO/GPS | Sensor measurements, update rates, calibration, and coordinate conventions | Not run |
-| Sensor timeout | Data goes stale after configured 1500 ms timeout | Not run |
-| GPS | Position, course, GS, ETE/ETA react sensibly to valid GPS updates | Not run |
-| Reliability | Power cycling, missing GPS, missing SD, and intermittent wireless link | Not run |
+| Arduino build | Rebuild both sketches with pinned ESP32 cores and library versions | Reproducible clean-build logs pending |
+| LCD | Verify 800 × 480 output, colors, refresh and sustained display operation | UI running in photographs; quantitative display test pending |
+| Touch | Confirm correct touch coordinates for controls and scratchpad | Full interaction regression pending |
+| CDU pages | Exercise MENU, IDENT, POS INIT, DEP/ARR, ROUTE, LEGS, DIRECT TO, PROGRESS and STATUS | LAT/LON, STATUS and PROGRESS shown in photographs; full page sweep pending |
+| Route editing | Insert/remove legs, manage discontinuities and verify EXEC state | Repeatable test cases pending |
+| microSD | Confirm CH422G selection and correct indexed data reads without LCD interference | STATUS photo reports SD mounted and NAVDATA online; log and error-path tests pending |
+| Feather sensor computer | Flash transmitter and check I²C devices, GPS, environmental readings and orientation | Hardware shown in photographs; calibration and build records pending |
+| ESP-NOW | Verify AV1 parsing, CRC error rejection, receive rate and 1500 ms link timeout | Sender/receiver source protocols agree; measurement logs pending |
+| Navigation math | Validate desired track, distance, ETE/ETA and coordinate handling against reference values | Test vectors pending |
+| Resilience | Restart, no GPS fix, no SD, wireless interruption and power cycling | Regression results pending |
 
-## Suggested evidence for future commits
+## Automated and offline checks
 
-- Board model and ESP32 Arduino core version
-- Arduino IDE menu settings, flash/PSRAM configuration, library version output
-- Screenshot/photo of CDU pages and wired hardware
-- Serial logs demonstrating SD mount and live ESP-NOW sensor packets (redact any personal or identifying data)
-- Test vectors for navigation math and CRC parser
+The navigation-data builder was tested separately from the embedded hardware:
 
-Do not mark these items complete without evidence from the actual hardware/software build.
+- **3 Python unit tests passed:** fixed-record index round trip, airport overlay, and runway overlay behavior.
+- **21/21 SHA-256 manifest entries matched** in the historical NAVDATA snapshot.
+- All five `.idx` files have lengths divisible by the **27-byte** record size.
+- Indexed records for **KPHL, GOBD, EGLL and RJTT** were found in the snapshot.
+- The builder completed an offline integration run using the historical processed FAA base plus **small synthetic** OurAirports-format CSV fixtures. It produced a ZIP with sample airport lookups.
+- The Feather transmitter and Waveshare receiver implement the same AV1 field count, CRC-16/CCITT parameters, and ESP-NOW channel 6.
 
-## Offline checks completed on the supplied historical archive
+Run the project unit tests from the repository root:
 
-These checks used the uploaded `Mini_FMC_WORLD_UPGRADE_ALL_IN_ONE_1.zip`, **not on-device execution**:
+```bash
+python -m unittest discover -s tests -v
+```
 
-- 21/21 SHA-256 entries in `NAVDATA/SHA256SUMS.txt` matched the contained files.
-- All five `.idx` files had lengths divisible by the specified 27-byte record size.
-- Indexed airport entries for `KPHL`, `GOBD`, `EGLL`, and `RJTT` were found and pointed to readable records.
-- Sensor transmitter and FMC receiver sources use the same AV1 field count (24), CRC-16/CCITT-FALSE parameters and ESP-NOW channel 6.
-- The published original Python data builder's Git blob checksum matched the uploaded script (source integrity).
-- The original builder completed an **offline integration run** with the supplied historical processed FAA NAVDATA base plus small synthetic OurAirports-format CSV inputs. It generated a ZIP and resolved GOBD, EGLL, and KPHL. This did **not** download or validate the actual live OurAirports datasets.
-- Three self-contained Python unit tests in [`tests/test_navdata_builder.py`](../tests/test_navdata_builder.py) **passed** (index round-trip, airport overlays, runway overlays). Run with `python -m unittest discover -s tests -v`.
+These checks address code contracts and historical data-file integrity; they are **not** a complete test of aeronautical-data accuracy, live data retrieval, firmware compilation or the installed hardware. Historical AIRAC 2608 data expired in September 2026.
 
-**Not established by these checks:** current NAVDATA validity, geographic/procedure accuracy, firmware compilation, physical sensor reliability, packet receipt rate, or end-to-end navigation functionality. The archived data cycle 2608 expired September 3, 2026.
+## Evidence to collect next
+
+- Exact Arduino IDE/CLI, ESP32 core, flash/PSRAM settings and library versions, with clean-build output.
+- Serial logs from both boards showing AV1 frame counts, CRC failures, receiver timeouts and GPS fix status.
+- Repeatable test vectors for Direct-To, great-circle distance and desired-track calculations.
+- Recorded sensor readings and comparison to references for location, pressure and attitude.
+- A short demonstration of the full startup, route entry and sensor-link workflow.
+
+Results will be added to this document as the validation work progresses.
