@@ -18,6 +18,26 @@ This is an ongoing embedded-systems project exploring avionics-style navigation 
 
 **Status:** The main display firmware and companion Feather sensor-transmitter source are now published. The hybrid NAVDATA builder is included, but the large generated data files are not. A clean build and on-device end-to-end test have **not** been completed as part of this repository preparation.
 
+## Prototype photographs
+
+These are photographs of the **actual working development hardware**, showing the Waveshare touchscreen interface, outdoor navigation tests, and the separate Feather sensor-computer prototype. They are not renders or simulations.
+
+| Outdoor LAT/LON navigation | System status and sensor link |
+| --- | --- |
+| ![Waveshare ESP32-S3 FMC showing LAT/LON navigation, GPS-derived track and distance during a field demonstration](assets/images/fmc-live-navigation.jpg) | ![ESP32-S3 FMC system status page showing display, touch controller, SD card, nav database, and sensor computer status](assets/images/fmc-system-status.jpg) |
+| The touchscreen shows direct navigation calculations and a connected sensor module during an outdoor test. | Diagnostics indicate display, touch, storage, and sensor-link states; the photo captures a **GPS no-fix** state and historical AIRAC 2608 test data. |
+
+| Nighttime navigation demonstration | Feather sensor computer on the test bench |
+| --- | --- |
+| ![Handheld FMC displaying LAT/LON navigation outdoors at night](assets/images/fmc-night-navigation.jpg) | ![Breadboard-based Feather ESP32 sensor-computer prototype and connected GPS/sensor modules](assets/images/feather-sensor-bench.jpg) |
+| Real-world test of the handheld navigation interface at night. | Development wiring and the remote sensor computer used to feed the main display over ESP-NOW. |
+
+**Navigation progress screen**
+
+<img src="assets/images/fmc-progress-page.jpg" alt="FMC PROGRESS page displaying KPHL, distance-to-go, desired track, GPS track and groundspeed during an outdoor test" width="430">
+
+*Photographed PROGRESS page displaying destination KPHL and live navigation fields. Some values, including speed and ETE, may be unavailable or zero during stationary/no-fix testing. These are engineering demonstrations only; displayed position and navigation data are not suitable for operational flight use.*
+
 ## Hardware and architecture
 
 - **Display MCU:** Waveshare ESP32-S3-Touch-LCD-4.3, 800 × 480 ST7262 RGB LCD, GT911 I²C touch controller.
@@ -88,7 +108,7 @@ The original builder was also run offline against the supplied historic processe
 
 ## Planned improvements
 
-- Add actual hardware photos/screenshots and a wiring/block diagram based on the assembled device.
+- Add a detailed wiring/block diagram based on the assembled device and additional screenshots from validated tests.
 - Capture a repeatable dual-board test showing valid AV1 packets, CRC checks, GPS data, and Feather-to-Waveshare link performance.
 - Rebuild and validate an up-to-date SD navigation database using a separately prepared FAA base package and documented source snapshots.
 - Extract navigation math and parsing into independently testable modules and add unit tests.
