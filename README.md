@@ -42,6 +42,8 @@ config/
 tools/
   build_world_hybrid_navdata.py         FAA + OurAirports overlay generator
   Build_World_NAVDATA.bat               Windows historical-data build launcher
+tests/
+  test_navdata_builder.py              Offline index and overlay tests
 docs/
   FEATHER_SENSOR_COMPUTER.md            Sensor hardware, protocol, and setup
   WORLD_NAVDATA.md                      Data provenance and generation workflow
@@ -65,6 +67,16 @@ docs/
 8. To prepare **world NAVDATA**, review [the hybrid data-generation guide](docs/WORLD_NAVDATA.md). The original uploaded dataset is a **historical, expired 2608 snapshot**; do not assume it is current.
 
 The supplied archive included a large local `libraries/` directory. This GitHub version deliberately **does not vendor those third-party libraries**. Install them separately; see the version manifest in the build documentation. The original archive remains the reference if a future dependency update causes a regression.
+
+## Offline navigation-data tests
+
+The worldwide-data builder has three standard-library unit tests for record indexing and overlay behavior. From the repository root:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The original builder was also run offline against the supplied historic processed FAA package plus **small synthetic** airport/runway/navaid CSV fixtures; it produced a ZIP and resolved sample GOBD, EGLL and KPHL airport entries. These checks **do not** validate live upstream downloads, the complete worldwide database's correctness, or any hardware-dependent feature. See the [test plan](docs/TEST_PLAN.md).
 
 ## Important limitations
 
