@@ -1,1 +1,40 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+# Arduino / ESP32 output
+*.bin
+*.elf
+*.hex
+*.map
+*.uf2
+*.log
+build/
+dist/
+.pio/
+.arduino*/
+
+# Installed libraries; do not vendor toolchains or dependencies
+libraries/
+
+# Editor / operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Credentials / local configuration
+.env
+.env.*
+!.env.example
+secrets.h
+credentials.h
+
+# Navigation datasets: verify licensing and currency before publication
+NAVDATA/
+navdata/
+*.idx
+*.dat
+
+# Temporary archives
+*.zip
+*.7z
+*.rar
