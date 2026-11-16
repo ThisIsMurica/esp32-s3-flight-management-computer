@@ -26,3 +26,10 @@ Third-party library license obligations still apply when dependencies are distri
 - `Adafruit Unified Sensor` 1.1.15
 
 The user-supplied ZIP should be preserved separately as an environment snapshot, **not committed as a single 36 MB binary repository file**.
+
+## Additional uploaded components
+
+- The [Feather ESP-NOW sender sketch](../SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino) is included separately from the display firmware. Its Adafruit GPS, BME280, and BNO08x dependencies are **not vendored**.
+- The [world NAVDATA builder](../tools/build_world_hybrid_navdata.py) and [Windows launcher](../tools/Build_World_NAVDATA.bat) were preserved from the user's supplied hybrid upgrade archive. They draw on a previously converted **FAA CIFP** base and **OurAirports** CSV files; no original bulk data is committed.
+- OurAirports states that its published data is [public domain](https://ourairports.com/data/) but provides no accuracy or suitability warranty. The [FAA CIFP](https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/) is updated every 28 days. Record data sources and cycle dates when preparing a new snapshot.
+- The supplied 2608 dataset and legacy v0.8.2 CDU sketch remain in the original user archive, **not** in the current Git repository. The current, more feature-complete display sketch was not overwritten.
