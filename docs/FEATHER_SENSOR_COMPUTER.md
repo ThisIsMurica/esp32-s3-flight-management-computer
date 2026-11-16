@@ -2,7 +2,7 @@
 
 Source: [`SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino`](../SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino)
 
-## Hardware described in the uploaded firmware
+## Sensor-computer hardware
 
 | Component | Connection or role |
 | --- | --- |
@@ -23,7 +23,7 @@ The code configures `Wire.begin()` and supplies I²C power where `PIN_I2C_POWER`
 - Quaternion orientation is converted into Euler roll, pitch, and yaw in degrees.
 - The transmitter prints sensor and link counters to the USB serial monitor at **115200 baud**.
 
-**Code-level compatibility check:** The existing Waveshare receiver expects the same `AV1` version, 24-field layout, CCITT CRC, and channel 6. This is a source inspection, **not an on-device wireless interoperability test**.
+**Firmware interface:** Both the Feather transmitter and Waveshare receiver use the same `AV1` version, 24-field packet layout, CRC-16/CCITT parameters, and channel 6. Reproducible over-the-air delivery and sensor-accuracy results are future validation milestones.
 
 ## Build and flash
 
@@ -34,12 +34,12 @@ The code configures `Wire.begin()` and supplies I²C power where `PIN_I2C_POWER`
 5. Build and upload to the Feather; open Serial Monitor at **115200**.
 6. Power the FMC, verify the same Wi-Fi channel is configured, and check valid ESP-NOW packet count and GPS/sensor status.
 
-Library versions recorded in the *original* Waveshare ZIP are documented in [dependencies and build notes](DEPENDENCIES_AND_BUILD.md). A known-good Feather core/library combination has not yet been reproduced.
+The development-library versions are recorded in [dependencies and build notes](DEPENDENCIES_AND_BUILD.md). A pinned Feather board-core and library combination, together with a clean-build log, is still to be documented.
 
 ## Limitations and security
 
 - ESP-NOW **broadcast is unencrypted and unauthenticated**. CRC detects accidental data corruption but does **not** authenticate the sender. Use only in the prototype/test environment.
 - The serial `TX queued/fail` counter reflects `esp_now_send()` return status; it is **not** confirmation that the receiver got the packet.
 - BME280 altitude uses a fixed **1013.25 hPa** reference, not a verified local altimeter setting.
-- Receiver packet parsing, GPS correctness, BNO orientation sign conventions, and actual 10 Hz RF delivery require bench/on-device validation.
+- Planned bench tests cover packet receipt, GPS accuracy, BNO orientation conventions, and actual over-the-air delivery rate relative to the configured 10 Hz transmit interval.
 - **Educational prototype only. Not certified aviation instrumentation.**
