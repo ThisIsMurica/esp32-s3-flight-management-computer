@@ -63,4 +63,4 @@ For a **newer FAA cycle**, first prepare a compatible processed base NAVDATA pac
 
 The large generated `.dat`/`.idx` files and historical ZIPs are excluded from Git. This keeps the code repository focused on original firmware, documented data-generation logic, and reproducible verification. External data versions and licenses should be reviewed before redistributing snapshots.
 
-The original data was checked offline, but the builder has **not been rerun against live sources**, and the complete system has **not been rebuilt or hardware-tested** with the resulting NAVDATA.
+The original data was checked offline, and the builder **successfully ran with the historical FAA base plus synthetic local CSV test fixtures**. Its original Python helper functions also passed [three offline unit tests](../tests/test_navdata_builder.py), runnable using `python -m unittest discover -s tests -v`. The builder has **not been rerun against live OurAirports sources**, and the complete system has **not been rebuilt or hardware-tested** with the resulting NAVDATA.
