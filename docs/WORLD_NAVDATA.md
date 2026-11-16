@@ -1,15 +1,15 @@
 # Hybrid FAA + worldwide navigation data
 
-This repository includes the **original source scripts** supplied with the `Mini_FMC_WORLD_UPGRADE_ALL_IN_ONE` package:
+The NAVDATA toolchain combines an indexed FAA base with international airport, runway and navaid overlays. The repository includes:
 
 - [`tools/build_world_hybrid_navdata.py`](../tools/build_world_hybrid_navdata.py): merges a **previously converted FAA FMC NAVDATA ZIP** with OurAirports CSV overlays
 - [`tools/Build_World_NAVDATA.bat`](../tools/Build_World_NAVDATA.bat): Windows launcher for the original 2608 package
 
-The uploaded source bundle also contained an older `Mini_Avionics_CDU_v08_2_WORLD_NAVDATA.ino` (about 4,790 lines). **Do not replace** the current `FlightManagementComputer.ino` (about 7,375 lines) with it: the current firmware includes additional Direct-To, progress, and ESP-NOW functions absent from the older sketch.
+**Firmware version history:** An earlier FMC v0.8.2 prototype used a smaller navigation-data sketch (about 4,790 lines). The current display firmware (about 7,375 lines) retains the later Direct-To, progress, and ESP-NOW implementation.
 
 ## Coverage and provenance
 
-The historic package combines:
+The hybrid data format combines:
 
 | Layer | Source | Coverage |
 | --- | --- | --- |
@@ -21,9 +21,9 @@ The historic package combines:
 - FAA CIFP downloads: https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/cifp/download/
 - OurAirports datasets and public-domain terms: https://ourairports.com/data/
 
-## Historical snapshot examined
+## Historical AIRAC 2608 snapshot
 
-The supplied `NAVDATA` directory identifies **AIRAC 2608**, effective **2026-08-06 09:01 UTC through 2026-09-03 09:01 UTC**. This cycle **is expired**; its package metadata reports the following overlay additions:
+The historical development dataset identifies **AIRAC 2608**, effective **2026-08-06 09:01 UTC through 2026-09-03 09:01 UTC**. This cycle **is expired**; its package metadata reports the following overlay additions:
 
 | Overlay record type | Reported added records |
 | --- | ---: |
@@ -31,7 +31,7 @@ The supplied `NAVDATA` directory identifies **AIRAC 2608**, effective **2026-08-
 | Runway ends | 18,004 |
 | Radio navaids | 8,184 |
 
-Offline inspection of the supplied archive confirmed:
+Historical snapshot integrity checks:
 - **21 of 21** SHA-256 manifest entries match the contained data files.
 - All five `.idx` files have lengths that are multiples of the **27-byte** index-record size.
 - The airport index resolves **KPHL, GOBD, EGLL, and RJTT**.
@@ -40,11 +40,11 @@ These are **archive-integrity and lookup checks only**, not validation of indivi
 
 ## Build a new hybrid package
 
-**Important:** The builder requires an *already processed* `Mini_FMC_NAVDATA_*.zip` containing `NAVDATA/airports.dat`, `airports.idx`, `points.dat`, `points.idx`, `runways.dat`, and `runways.idx`. It **does not parse a raw FAA CIFP download into these files**. The previously processed FAA base ZIP was provided in the uploaded bundle but is intentionally not committed here.
+**Prerequisite:** The builder requires an *already processed* `Mini_FMC_NAVDATA_*.zip` containing `NAVDATA/airports.dat`, `airports.idx`, `points.dat`, `points.idx`, `runways.dat`, and `runways.idx`. It **does not parse a raw FAA CIFP download into these files**. The historical preconverted FAA base ZIP is retained outside the public source repository.
 
 For a reproducible historical run on Windows:
 
-1. Copy the supplied historical `Mini_FMC_NAVDATA_260806.zip` alongside the two scripts in `tools/`.
+1. Place the historical `Mini_FMC_NAVDATA_260806.zip` base package alongside the two scripts in `tools/`.
 2. Run `Build_World_NAVDATA.bat`, or from that directory use:
 
    ```powershell
@@ -63,4 +63,4 @@ For a **newer FAA cycle**, first prepare a compatible processed base NAVDATA pac
 
 The large generated `.dat`/`.idx` files and historical ZIPs are excluded from Git. This keeps the code repository focused on original firmware, documented data-generation logic, and reproducible verification. External data versions and licenses should be reviewed before redistributing snapshots.
 
-The original data was checked offline, and the builder **successfully ran with the historical FAA base plus synthetic local CSV test fixtures**. Its original Python helper functions also passed [three offline unit tests](../tests/test_navdata_builder.py), runnable using `python -m unittest discover -s tests -v`. The builder has **not been rerun against live OurAirports sources**, and the complete system has **not been rebuilt or hardware-tested** with the resulting NAVDATA.
+The historical archive passed integrity checks, and the builder **successfully ran with the historical FAA base plus synthetic local CSV test fixtures**. Its Python helper functions also passed [three offline unit tests](../tests/test_navdata_builder.py), runnable using `python -m unittest discover -s tests -v`. A full live-source refresh, a reproducible build with current data, and an end-to-end onboard NAVDATA regression remain planned validation steps.
