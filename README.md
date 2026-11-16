@@ -1,119 +1,105 @@
 # ESP32-S3 Flight Management Computer
 
-**A touchscreen flight-management / control-display-unit (CDU) prototype built around the Waveshare ESP32-S3-Touch-LCD-4.3.**
+**Touchscreen avionics-style FMC/CDU prototype | ESP32-S3 · C++/Arduino · LVGL · ESP-NOW · GPS**
 
-This is an ongoing embedded-systems project exploring avionics-style navigation workflows, real-time sensor integration, and human–machine interfaces. The main firmware implements a CDU-like UI with route and procedure pages, navigation-data lookup, Direct-To functionality, and a progress display. It combines **C++/Arduino**, **LVGL**, **SD-card data access**, and **ESP-NOW** communications.
+I'm developing a miniature flight management computer that combines a touchscreen control-display unit, flight-plan management, onboard navigation-data lookup, and live sensor telemetry. The project is built around a **Waveshare ESP32-S3-Touch-LCD-4.3**, with a separate **Adafruit ESP32-S2 Feather** acting as a wireless GPS and environmental/attitude sensor computer.
 
-> **Prototype / educational use only.** This is not certified avionics, does not contain a validated operational navigation database, and must not be used for real flight planning, guidance, or navigation.
+The focus is embedded systems integration: UI design, navigation calculations, reliable data exchange between microcontrollers, SD-card indexing, and debugging real hardware.
 
-## Features present in the source
+<p align="center">
+  <img src="assets/images/fmc-live-navigation.jpg" alt="Handheld ESP32-S3 FMC showing LAT/LON navigation with external sensor hardware during a field test" width="520">
+</p>
 
-- **CDU touch interface:** MENU, IDENT, POS INIT, INDEX, DEP/ARR, ROUTE, LEGS, DIRECT TO, PROGRESS, LAT/LON, NAV DATA, and STATUS pages.
-- **Route editing:** origin and destination, waypoint entry, leg insertion/deletion, route modification and execution state, and discontinuities.
-- **Departure/arrival workflows:** runway, SID/STAR, transition, and approach selection where records exist in the navigation data.
-- **Direct-To and progress:** target selection, distance-to-go, desired track, and GPS-dependent ground speed, estimated time enroute, and ETA calculations.
-- **SD-backed navdata:** indexed airport/waypoint/procedure/runway records and AIRAC-cycle metadata, with a small built-in **test** database for development.
-- **Live sensor interface:** receives ESP-NOW packets from a separate Feather sensor computer carrying GPS position/UTC, barometric data, and orientation values. The receiver validates packet CRC-16/CCITT and tracks link health.
-- **Display:** 800 × 480 RGB LCD with GT911 touch, LVGL 8-based UI, and anti-tearing/display-buffer configuration.
+## Engineering highlights
 
-**Status:** The main display firmware and companion Feather sensor-transmitter source are now published. The hybrid NAVDATA builder is included, but the large generated data files are not. A clean build and on-device end-to-end test have **not** been completed as part of this repository preparation.
+- **Touchscreen FMC interface:** MENU, IDENT, POS INIT, DEP/ARR, ROUTE, LEGS, DIRECT TO, PROGRESS, LAT/LON, NAV DATA, and STATUS pages using LVGL 8 on an **800 × 480 RGB display**.
+- **Flight planning and navigation:** Origin/destination entry, route-leg insertion and deletion, discontinuities, waypoint lookup, runway/procedure selection where data is available, Direct-To, desired track, distance-to-go, and GPS-dependent ETE/ETA.
+- **Two-microcontroller architecture:** A Feather sensor computer reads a PA1010D GPS, BME280 environmental sensor, and BNO085 orientation sensor, then broadcasts telemetry over **ESP-NOW, channel 6**.
+- **Packet handling:** Versioned 24-field `AV1` frames, **CRC-16/CCITT** checking, receiver buffering, link-status monitoring, and timeout handling. The transmitter is configured to send every **100 ms (10 Hz)**.
+- **Local navigation data:** Indexed airport, fix, runway, and procedure records on microSD; a separate Python builder combines a preconverted FAA NAVDATA base with OurAirports worldwide airport/runway/navaid overlays.
+- **Board-level debugging:** Custom CH422G I/O-expander control for microSD chip select, avoiding the ESP32-S3 GPIO10 conflict with an RGB LCD data line.
 
 ## Prototype photographs
 
-These are photographs of the **actual working development hardware**, showing the Waveshare touchscreen interface, outdoor navigation tests, and the separate Feather sensor-computer prototype. They are not renders or simulations.
+These photographs show my development hardware and examples of the FMC interface running on the device.
 
-| Outdoor LAT/LON navigation | System status and sensor link |
+| System status & sensor interface | Nighttime LAT/LON navigation |
 | --- | --- |
-| ![Waveshare ESP32-S3 FMC showing LAT/LON navigation, GPS-derived track and distance during a field demonstration](assets/images/fmc-live-navigation.jpg) | ![ESP32-S3 FMC system status page showing display, touch controller, SD card, nav database, and sensor computer status](assets/images/fmc-system-status.jpg) |
-| The touchscreen shows direct navigation calculations and a connected sensor module during an outdoor test. | Diagnostics indicate display, touch, storage, and sensor-link states; the photo captures a **GPS no-fix** state and historical AIRAC 2608 test data. |
+| ![FMC STATUS screen with display, SD, NAVDATA and sensor-computer diagnostics](assets/images/fmc-system-status.jpg) | ![Touchscreen FMC running its LAT/LON navigation page during a nighttime field test](assets/images/fmc-night-navigation.jpg) |
+| On-device diagnostics for display, touch, navigation storage and sensor link. This capture shows GPS without a position fix. | Outdoor demonstration of the handheld navigation page. |
 
-| Nighttime navigation demonstration | Feather sensor computer on the test bench |
+| Feather sensor prototype | Navigation progress page |
 | --- | --- |
-| ![Handheld FMC displaying LAT/LON navigation outdoors at night](assets/images/fmc-night-navigation.jpg) | ![Breadboard-based Feather ESP32 sensor-computer prototype and connected GPS/sensor modules](assets/images/feather-sensor-bench.jpg) |
-| Real-world test of the handheld navigation interface at night. | Development wiring and the remote sensor computer used to feed the main display over ESP-NOW. |
+| ![Feather ESP32-S2 sensor computer on breadboard with connected sensor modules](assets/images/feather-sensor-bench.jpg) | ![FMC PROGRESS page with destination KPHL and navigation fields](assets/images/fmc-progress-page.jpg) |
+| Separate sensor-processing board and connected modules during bench development. | Destination, desired track, distance and GPS-dependent progress fields. |
 
-**Navigation progress screen**
+The [larger outdoor navigation photo](assets/images/fmc-live-navigation.jpg) is shown at the top of this README. The STATUS image displays an **AIRAC 2608** development dataset; it is not a current navigation-data cycle.
 
-<img src="assets/images/fmc-progress-page.jpg" alt="FMC PROGRESS page displaying KPHL, distance-to-go, desired track, GPS track and groundspeed during an outdoor test" width="430">
-
-*Photographed PROGRESS page displaying destination KPHL and live navigation fields. Some values, including speed and ETE, may be unavailable or zero during stationary/no-fix testing. These are engineering demonstrations only; displayed position and navigation data are not suitable for operational flight use.*
-
-## Hardware and architecture
-
-- **Display MCU:** Waveshare ESP32-S3-Touch-LCD-4.3, 800 × 480 ST7262 RGB LCD, GT911 I²C touch controller.
-- **Navigation storage:** TF/microSD interface with custom chip-select handling through a CH422G I/O expander.
-- **Sensor source:** separate Feather board (exact model and transmitter source are not in this repository) communicating via ESP-NOW on channel 6.
-
-See [Hardware & wiring](docs/HARDWARE.md) and [Architecture](docs/ARCHITECTURE.md) for implementation details grounded in the firmware.
-
-## Repository structure
+## Hardware and system architecture
 
 ```text
-FlightManagementComputer/
-  FlightManagementComputer.ino       Main firmware, route logic, and LVGL pages
-  esp_panel_board_custom_conf.h     Waveshare RGB LCD, touch, and expander setup
-  lvgl_v8_port.cpp                   LVGL display/touch FreeRTOS port
-  lvgl_v8_port.h                     LVGL port settings
-SensorComputer/
-  Feather_Sensor_Computer_ESPNOW_v1/
-    Feather_Sensor_Computer_ESPNOW_v1.ino   ESP32-S2 transmitter, GPS, BME280, BNO085
-config/
-  lv_conf.h                         LVGL 8.4 configuration from the original setup
-tools/
-  build_world_hybrid_navdata.py         FAA + OurAirports overlay generator
-  Build_World_NAVDATA.bat               Windows historical-data build launcher
-tests/
-  test_navdata_builder.py              Offline index and overlay tests
-docs/
-  FEATHER_SENSOR_COMPUTER.md            Sensor hardware, protocol, and setup
-  WORLD_NAVDATA.md                      Data provenance and generation workflow
-  ARCHITECTURE.md                   Data and UI architecture
-  DEPENDENCIES_AND_BUILD.md         Library versions and build checklist
-  HARDWARE.md                       Pin definitions and connected subsystems
-  NAVDATA_AND_SENSOR_PROTOCOL.md    Required external data and link format
-  TEST_PLAN.md                      Verification plan and unverified assumptions
-  THIRD_PARTY.md                    Third-party component attribution
+  PA1010D GPS ───┐
+  BME280 ────────┼──> ESP32-S2 Feather ── ESP-NOW / AV1 + CRC ──> ESP32-S3 FMC
+  BNO085 ────────┘                                             │
+                                                    ┌───────────┼───────────┐
+                                                    │           │           │
+                                               LVGL touch    Route &      microSD
+                                               interface     nav logic     NAVDATA
 ```
 
-## Getting started
+**Display:** Waveshare ESP32-S3-Touch-LCD-4.3 with ST7262 RGB LCD and GT911 I²C touch controller.  
+**Sensor computer:** Adafruit ESP32-S2 Feather with GPS, barometric/environmental sensing and orientation input.  
+**Storage:** Indexed `/NAVDATA` files on microSD, selected via the CH422G I/O expander.
 
-1. Install the **Espressif ESP32 Arduino board support** and select a compatible ESP32-S3 board profile. The exact board-core version and Arduino Tools menu settings used for the supplied firmware were **not** included in the archive.
-2. Install the dependencies and match the library versions recorded in [Dependencies and build](docs/DEPENDENCIES_AND_BUILD.md). In particular, use **LVGL 8.4.0**, not LVGL 9.
-3. Copy `config/lv_conf.h` into the parent of the `lvgl` library folder (as it was in the original archive), or configure the compiler's LVGL config include path equivalently.
-4. Open `FlightManagementComputer/FlightManagementComputer.ino` in Arduino IDE. Keep all four source files in the same sketch folder.
-5. Select suitable ESP32-S3 flash/PSRAM and board options for the Waveshare hardware, build, and upload. Record the working options after verifying them on the device.
-6. Open Serial Monitor at **115200 baud** to inspect ESP-NOW and SD navigation-data status.
-7. To run the **Feather sensor computer**, use [its dedicated setup guide](docs/FEATHER_SENSOR_COMPUTER.md); match channel 6 on both devices.
-8. To prepare **world NAVDATA**, review [the hybrid data-generation guide](docs/WORLD_NAVDATA.md). The original uploaded dataset is a **historical, expired 2608 snapshot**; do not assume it is current.
+Detailed implementation notes: [Architecture](docs/ARCHITECTURE.md) · [Hardware interfaces](docs/HARDWARE.md) · [Feather transmitter](docs/FEATHER_SENSOR_COMPUTER.md) · [Packet and NAVDATA formats](docs/NAVDATA_AND_SENSOR_PROTOCOL.md)
 
-The supplied archive included a large local `libraries/` directory. This GitHub version deliberately **does not vendor those third-party libraries**. Install them separately; see the version manifest in the build documentation. The original archive remains the reference if a future dependency update causes a regression.
+## Repository layout
 
-## Offline navigation-data tests
+```text
+FlightManagementComputer/    ESP32-S3 display firmware and board/LVGL port
+SensorComputer/              ESP32-S2 Feather GPS/environment/AHRS transmitter
+config/                      LVGL configuration
+tools/                       FAA + OurAirports hybrid NAVDATA builder
+tests/                       Python navigation-data builder tests
+docs/                        Hardware, architecture, build and protocol notes
+assets/images/               Photographs of the actual prototype
+```
 
-The worldwide-data builder has three standard-library unit tests for record indexing and overlay behavior. From the repository root:
+## Building and running
+
+1. Install the **Espressif Arduino ESP32 board package** and the dependencies listed in [Build and dependencies](docs/DEPENDENCIES_AND_BUILD.md). The display firmware targets **LVGL 8.4.0** (not LVGL 9).
+2. Place `config/lv_conf.h` where the LVGL 8 build can find it, following the [configuration instructions](docs/DEPENDENCIES_AND_BUILD.md).
+3. Open `FlightManagementComputer/FlightManagementComputer.ino` in Arduino IDE; keep the associated `.h` and `.cpp` files in the same sketch directory.
+4. Select an ESP32-S3 board profile and flash/PSRAM settings appropriate for the Waveshare 4.3-inch model. Use **115200 baud** for serial diagnostics.
+5. For wireless telemetry, build and flash the [Feather sensor computer](docs/FEATHER_SENSOR_COMPUTER.md), using ESP-NOW **channel 6** on both boards.
+6. To generate SD-card navigation data, follow the [world NAVDATA guide](docs/WORLD_NAVDATA.md). The builder requires a **preconverted FAA NAVDATA package**; it does not directly parse raw FAA CIFP.
+
+The repository references its third-party Arduino dependencies instead of committing full library copies.
+
+## Testing and development status
+
+**Demonstrated in photographs:** FMC screens running on the physical Waveshare display, including navigation, progress and system-status pages, alongside the Feather development hardware.
+
+**Automated/offline checks:** Three Python navigation-data builder unit tests passed, and the historical NAVDATA archive passed **21/21 SHA-256 manifest checks**. Run the unit tests with:
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-The original builder was also run offline against the supplied historic processed FAA package plus **small synthetic** airport/runway/navaid CSV fixtures; it produced a ZIP and resolved sample GOBD, EGLL and KPHL airport entries. These checks **do not** validate live upstream downloads, the complete worldwide database's correctness, or any hardware-dependent feature. See the [test plan](docs/TEST_PLAN.md).
+**Next validation milestones:** Record a reproducible clean build with pinned board/library settings, capture dual-board ESP-NOW packet-delivery and CRC statistics, characterize GPS/attitude measurements, and exercise route/navigation behavior against known test cases. See the [verification plan](docs/TEST_PLAN.md).
 
-## Important limitations
+The full generated SD database is kept outside Git because of its size, source provenance and update cycle. The historical **AIRAC 2608** snapshot expired in September 2026, and the project also includes a small built-in development database. Current aeronautical-data coverage and complete end-to-end operation have not been independently established.
 
-- The full `/NAVDATA` SD-card dataset is **not checked in**. The uploaded 2608 hybrid dataset was audited offline, but expired September 3, 2026; see [world NAVDATA](docs/WORLD_NAVDATA.md). The built-in list of airports, VORs, and fixes remains small, hard-coded **test data**.
-- The **Feather sensor transmitter** source is [included](SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino), but live values still require compatible wired sensors, board setup, and an on-device radio test.
-- GPS-derived calculations depend on valid sensor input; runtime behavior was not independently verified in this repository-preparation pass.
-- ESP-NOW packet CRC is an error-detection mechanism, **not authentication or encryption**. Do not treat received packets as trustworthy for safety-critical purposes.
-- The bundled porting files are adapted from Espressif examples and retain their existing SPDX notices. See [Third-party acknowledgements](docs/THIRD_PARTY.md).
+## Development roadmap
 
-## Planned improvements
+- Document repeatable board/PSRAM settings and hardware test results.
+- Expand route/navigation unit tests and separate navigation math and parsing from the main sketch.
+- Capture live two-board wireless-link performance and sensor-calibration results.
+- Refresh the FAA/OurAirports data-generation workflow with versioned inputs.
+- Add a wiring diagram and a short hardware demonstration video.
 
-- Add a detailed wiring/block diagram based on the assembled device and additional screenshots from validated tests.
-- Capture a repeatable dual-board test showing valid AV1 packets, CRC checks, GPS data, and Feather-to-Waveshare link performance.
-- Rebuild and validate an up-to-date SD navigation database using a separately prepared FAA base package and documented source snapshots.
-- Extract navigation math and parsing into independently testable modules and add unit tests.
-- Capture reproducible board/PSRAM/build options and complete the [test plan](docs/TEST_PLAN.md).
+## Scope and licensing
 
-## License and attribution
+This is a **personal educational engineering prototype, not certified avionics**. It is not intended for operational flight planning or navigation. ESP-NOW CRC detects transmission errors but does not authenticate a transmitting device.
 
-No blanket open-source license is assigned to this combined repository at this stage. The Espressif-derived port files preserve their own license notices and third-party dependencies have their own licenses; see [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md). Decide on a license for the original application code before inviting reuse.
+The application does not yet have a repository-wide open-source license. Bundled Espressif-derived port files retain their individual license notices; see [third-party acknowledgements](docs/THIRD_PARTY.md).
