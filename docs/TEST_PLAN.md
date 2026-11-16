@@ -38,6 +38,8 @@ These checks used the uploaded `Mini_FMC_WORLD_UPGRADE_ALL_IN_ONE_1.zip`, **not 
 - All five `.idx` files had lengths divisible by the specified 27-byte record size.
 - Indexed airport entries for `KPHL`, `GOBD`, `EGLL`, and `RJTT` were found and pointed to readable records.
 - Sensor transmitter and FMC receiver sources use the same AV1 field count (24), CRC-16/CCITT-FALSE parameters and ESP-NOW channel 6.
-- The published original Python data builder's Git blob checksum matched the uploaded script (source integrity), not a successful execution.
+- The published original Python data builder's Git blob checksum matched the uploaded script (source integrity).
+- The original builder completed an **offline integration run** with the supplied historical processed FAA NAVDATA base plus small synthetic OurAirports-format CSV inputs. It generated a ZIP and resolved GOBD, EGLL, and KPHL. This did **not** download or validate the actual live OurAirports datasets.
+- Three self-contained Python unit tests in [`tests/test_navdata_builder.py`](../tests/test_navdata_builder.py) **passed** (index round-trip, airport overlays, runway overlays). Run with `python -m unittest discover -s tests -v`.
 
 **Not established by these checks:** current NAVDATA validity, geographic/procedure accuracy, firmware compilation, physical sensor reliability, packet receipt rate, or end-to-end navigation functionality. The archived data cycle 2608 expired September 3, 2026.
