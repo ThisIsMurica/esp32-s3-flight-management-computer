@@ -53,5 +53,5 @@ The current source tree includes both display and sensor firmware. Hardware phot
 
 ## Companion firmware and data builder
 
-- **Feather firmware:** [Arduino sketch](../SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino) and [setup notes](FEATHER_SENSOR_COMPUTER.md). Select the appropriate ESP32-S2 Feather target; use the supplied sketch's `Wire.begin()` and default sensor addresses only if they match the physical board.
+- **Feather firmware:** [Arduino sketch](../SensorComputer/Feather_Sensor_Computer_ESPNOW_v1/Feather_Sensor_Computer_ESPNOW_v1.ino) and [setup notes](FEATHER_SENSOR_COMPUTER.md). Select the appropriate ESP32-S2 Feather target; confirm that the transmitter sketch's `Wire.begin()` configuration and default sensor addresses match the actual board.
 - **Historical world NAVDATA overlay builder:** [Python 3 script](../tools/build_world_hybrid_navdata.py) and [Windows batch launcher](../tools/Build_World_NAVDATA.bat). The Python script uses only the standard library. It requires an **already converted** FAA NAVDATA ZIP and downloads OurAirports CSVs unless you specify local versions. See [data generation notes](WORLD_NAVDATA.md).
